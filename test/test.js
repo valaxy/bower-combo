@@ -43,13 +43,14 @@ describe('generate', function () {
 			},
 			function (done) {
 				// generate the config
-				var code = generate(bowerPath, configPath)
-				var obj = JSON.parse(code)
-				assert.deepEqual(obj, {
+				generate(bowerPath, configPath)
+				var code = '' + fs.readFileSync(configPath)
+				var config = {
 					paths: {
-						timer: 'bower_components/timer/src/timer.js'
+						timer: 'bower_components/timer/src/timer'
 					}
-				})
+				}
+				assert.equal(code, 'require.config(' + JSON.stringify(config) + ')')
 				done()
 			}
 		], function (err) {
@@ -61,5 +62,4 @@ describe('generate', function () {
 
 	})
 })
-
 

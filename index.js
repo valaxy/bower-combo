@@ -2,11 +2,17 @@ var fs = require('fs')
 var path = require('path')
 
 
-var getconfig = function (packageName, relpath) {
+var item = function (packageName, relpath) {
 	var p = path.join('bower_components', packageName, relpath)
-	return p.replace(/\\/g, '/')
+	p = path.join(path.dirname(p), path.basename(p, path.extname(p))) // remove `.js` `.css`
+	p = p.replace(/\\/g, '/') // normalize
+	return p
 }
 
+var createConfigFile = function (config, filePath) {
+	var code = 'require.config(' + JSON.stringify(config) + ')'
+	fs.writeFileSync(filePath, code)
+}
 
 var generate = function (bowerPath, configPath) {
 	// read bower package
@@ -27,17 +33,16 @@ var generate = function (bowerPath, configPath) {
 		var packageBower = JSON.parse(fs.readFileSync(packageBowerPath))
 		var main = packageBower.main
 		if (typeof main == 'string') {
-			config.paths[packageName] = getconfig(packageName, main)
+			config.paths[packageName] = item(packageName, main)
 		} else { // array
 			for (var j in main) {
-				config.paths[packageName] = getconfig(packageName, main[j])
+				config.paths[packageName] = item(packageName, main[j])
 			}
 		}
 	}
 
 	// create the config code
-	var code = JSON.stringify(config)
-	return code
+	createConfigFile(config, configPath)
 }
 
 module.exports = generate
